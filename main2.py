@@ -3,6 +3,8 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 #from PyQt5.QtWidgets import *
 import json
+import uuid
+
 
 data = [
             { "label":"constante" ,"nodes" :[ { "type": "void","output":[{"type": "int"}],"input": [] } ]},
@@ -383,6 +385,7 @@ class Connector(QGraphicsEllipseItem):
     Type = QGraphicsItem.UserType +1
 
     def __init__(self,rect, parent=None):
+        self.uuid = str(uuid.uuid4())
         self.mousehover = False
         self.parent = parent
         QGraphicsEllipseItem.__init__(self,rect, parent)
@@ -624,26 +627,28 @@ class Node(QGraphicsObject):
         # for connect in self.outputConnector:
         #    connect.setValue(text)
 
-    def getinput(self):
-        global data
-        return data[0]["nodes"][0]["input"]
-
-    def getoutput(self):
-        global data
-        return data[0]["nodes"][0]["output"]
-
     def serialize(self):
-        for output in self.outputConnector:
-            print(output)
-        print(self.inputc)
-        print(self.outputc)
+        print("SERIALIZE ")
+            
         result = {}
         result["type"] = self.getType()
-        result["input"] = self.getinput()
-        result["output"] = self.getoutput()
+        result["input"] = self.inputc # self.getinput()
+        result["output"] = self.outputc # self.getoutput()
         result["pos"] = {}
         result["pos"]["x"] =self.scenePos().x()
         result["pos"]["y"] =self.scenePos().y()
+        result['inputuuid'] = []
+        result['outputuuid'] = [] 
+        for ic in self.inputConnector:
+            result['inputuuid'].append(ic.uuid)
+        for oc in self.outputConnector:
+            result['outputuuid'].append(oc.uuid)
+
+        for output in self.outputConnector:
+            for edge in output.edges:
+                print("%s %s " % (edge.source.uuid, edge.target.uuid)) 
+        
+        
         return result
 
 class NodeAdd(Node):
@@ -664,13 +669,6 @@ class NodeAdd(Node):
     def getType(self):
         return "add"
 
-    def getinput(self):
-        global data
-        return data[1]["nodes"][0]["input"]
-
-    def getoutput(self):
-        global data
-        return data[1]["nodes"][0]["output"]
 
 class NodeInt(Node):
     def createSpecificGui(self):
