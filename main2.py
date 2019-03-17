@@ -624,6 +624,14 @@ class Node(QGraphicsObject):
         # for connect in self.outputConnector:
         #    connect.setValue(text)
 
+    def getinput(self):
+        global data
+        return data[0]["nodes"][0]["input"]
+
+    def getoutput(self):
+        global data
+        return data[0]["nodes"][0]["output"]
+
     def serialize(self):
         for output in self.outputConnector:
             print(output)
@@ -631,8 +639,8 @@ class Node(QGraphicsObject):
         print(self.outputc)
         result = {}
         result["type"] = self.getType()
-        result["input"] = self.inputc
-        result["output"] = self.inputc
+        result["input"] = self.getinput()
+        result["output"] = self.getoutput()
         result["pos"] = {}
         result["pos"]["x"] =self.scenePos().x()
         result["pos"]["y"] =self.scenePos().y()
@@ -655,6 +663,14 @@ class NodeAdd(Node):
 
     def getType(self):
         return "add"
+
+    def getinput(self):
+        global data
+        return data[1]["nodes"][0]["input"]
+
+    def getoutput(self):
+        global data
+        return data[1]["nodes"][0]["output"]
 
 class NodeInt(Node):
     def createSpecificGui(self):
