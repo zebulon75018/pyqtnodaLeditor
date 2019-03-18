@@ -7,8 +7,7 @@ import uuid
 
 
 #
-# TODO fix the inversion between inputConnector and outputConnector 
-# in serialisation
+# TODO load and connection...
 # 
 data = [
             { "label":"constante" ,"nodes" :[ { "type": "void","output":[{"type": "int"}],"input": [] } ]},
@@ -144,7 +143,7 @@ class QNodesEditor(QObject):
         #print(self.edgeCreated) 
         print(result)
         with open('data.json', 'w') as outfile:
-            json.dump(result, outfile)
+            json.dump(result, outfile, indent=4, sort_keys=True)
 
     def load(self):
         with open('data.json', 'r') as outfile:
@@ -163,8 +162,8 @@ class QNodesEditor(QObject):
             for r in result:
                 # TODO inverse input and output Connector
                 for iconn,oconn in r["connection"]:
-                    #on = allnodeOutput[oconn]
-                    allnodeInput[iconn].loadEdge(allnodeOutput[oconn])
+                    # on = allnodeOutput[iconn]
+                    allnodeOutput[iconn].loadEdge(allnodeInput[oconn])
                     #print("%s %s " % (iconn,oconn))
 
 
@@ -405,6 +404,7 @@ class Connector(QGraphicsEllipseItem):
 
     def __init__(self,rect, parent=None):
         self.uuid = str(uuid.uuid4())
+        print("connector %s" % self.uuid)
         self.mousehover = False
         self.parent = parent
         QGraphicsEllipseItem.__init__(self,rect, parent)
@@ -542,8 +542,8 @@ class Node(QGraphicsObject):
         self.isSelected = False
 
         self.label = label
-        self.inputc = inputc
-        self.outputc = outputc
+        self.inputc = list(inputc)
+        self.outputc = list(outputc)
         self.edges = []
         self.inputConnector = []
         self.outputConnector = []
@@ -678,23 +678,10 @@ class Node(QGraphicsObject):
         result["pos"] = {}
         result["pos"]["x"] =self.scenePos().x()
         result["pos"]["y"] =self.scenePos().y()
-        #result['inputuuid'] = []
-        #result['outputuuid'] = []
-        """ 
-        for ic in self.inputConnector:
-            result['inputuuid'].append(ic.uuid)
-        for oc in self.outputConnector:
-            result['outputuuid'].append(oc.uuid)
-        """
-        """
-        for output in self.outputConnector:
-            for edge in output.edges:
-                result("%s %s " % (edge.source.uuid, edge.target.uuid)) 
-        """
         result["connection"] = []
         for output in self.outputConnector:
             for edge in output.edges:
-                result["connection"].append((edge.target.uuid, edge.source.uuid))        
+                result["connection"].append((edge.source.uuid, edge.target.uuid))        
         return result
 
 class NodeAdd(Node):
