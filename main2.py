@@ -152,6 +152,7 @@ class QNodesEditor(QObject):
             allnodeOutput = {}
             for r in result:
                 n = self.scene.addNode(QPointF(r["pos"]["x"],r["pos"]["y"]),r)
+                n.setValue(r["value"])
                 for iconc in n.inputConnector:
                     allnodeInput[iconc.uuid] = iconc
                 for oconc in n.outputConnector:
@@ -435,7 +436,7 @@ class Connector(QGraphicsEllipseItem):
     def hoverEnterEvent(self, event):
         """Change the Knob's rectangle color."""
         #print("hoverEnterEvent")
-        self.mousehover = True
+        self.mousehover = True 
         self.update()
 
     def hoverLeaveEvent(self, event):
@@ -542,8 +543,14 @@ class Node(QGraphicsObject):
         self.isSelected = False
 
         self.label = label
-        self.inputc = list(inputc)
-        self.outputc = list(outputc)
+        self.inputc = []
+        for i in inputc:
+            print(i)
+            self.inputc.append(i.copy())
+        self.outputc = []
+        for o in outputc:
+            print(o)
+            self.outputc.append(o.copy())
         self.edges = []
         self.inputConnector = []
         self.outputConnector = []
@@ -659,6 +666,9 @@ class Node(QGraphicsObject):
     def setValue(self,value):
         print(value)
         self.execute()
+    
+    def getValue(self):
+        return None
 
     def execute(self):
         pass
@@ -678,6 +688,7 @@ class Node(QGraphicsObject):
         result["pos"] = {}
         result["pos"]["x"] =self.scenePos().x()
         result["pos"]["y"] =self.scenePos().y()
+        result["value"] = self.getValue()
         result["connection"] = []
         for output in self.outputConnector:
             for edge in output.edges:
@@ -701,15 +712,18 @@ class NodeAdd(Node):
 
     def getType(self):
         return "add"
+    
+    def getValue(self):
+        return str(self.widget.text())
 
 
 class NodeInt(Node):
     def createSpecificGui(self):
         proxy = QGraphicsProxyWidget(self)
-        widget = QLineEdit("")
-        widget.textChanged.connect(self.valueChanged)
-        widget.setMaximumWidth(80)
-        proxy.setWidget(widget)
+        self.widget = QLineEdit("")
+        self.widget.textChanged.connect(self.valueChanged)
+        self.widget.setMaximumWidth(80)
+        proxy.setWidget(self.widget)
         proxy.setPos(10,30)
 
     def getType(self):
@@ -718,6 +732,9 @@ class NodeInt(Node):
     def valueChanged(self,text):
         for connect in self.outputConnector:
             connect.setValue(text)
+
+    def getValue(self):
+        return str(self.widget.text())
 
 
 if __name__ == '__main__':
